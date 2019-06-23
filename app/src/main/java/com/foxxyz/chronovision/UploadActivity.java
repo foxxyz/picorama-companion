@@ -4,15 +4,17 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.icu.text.SimpleDateFormat;
 import android.icu.util.Calendar;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.ResultReceiver;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -22,7 +24,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
+
+import static java.lang.Integer.parseInt;
 
 
 public class UploadActivity extends AppCompatActivity implements APIReceiver.Receiver {
@@ -97,6 +102,8 @@ public class UploadActivity extends AppCompatActivity implements APIReceiver.Rec
         if (requestCode == PICK_IMAGE && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             updateImage(uri);
+            updateDate();
+            toggleInterface(true);
         }
     }
 
@@ -106,9 +113,11 @@ public class UploadActivity extends AppCompatActivity implements APIReceiver.Rec
                 break;
             case FileUploadService.FINISHED:
                 Toast.makeText(this, "Photo posted!", Toast.LENGTH_LONG).show();
+                toggleInterface(true);
                 break;
             case FileUploadService.ERROR:
                 System.out.println("error");
+                toggleInterface(true);
                 break;
         }
     }
@@ -116,13 +125,29 @@ public class UploadActivity extends AppCompatActivity implements APIReceiver.Rec
     private void handleSendImage(Intent intent) {
         Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         // Put image into the photo picker
-        System.out.println("Got " + uri);
         updateImage(uri);
     }
 
     private void openGallery() {
         Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         startActivityForResult(gallery, PICK_IMAGE);
+    }
+
+    // Rotate bitmap to correct orientation
+    private Bitmap rotate(Bitmap source, int orientation) {
+        Matrix transform = new Matrix();
+        switch(orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                transform.postRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                transform.postRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                transform.postRotate(270);
+                break;
+        }
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), transform, true);
     }
 
     private void submit() {
@@ -137,8 +162,18 @@ public class UploadActivity extends AppCompatActivity implements APIReceiver.Rec
         receiver.setReceiver(this);
         submit.putExtra("receiver", receiver);
 
+        // Start and lock interface
         startService(submit);
-        System.out.println("Submitted");
+        toggleInterface(false);
+    }
+
+    private void toggleInterface(boolean enabled) {
+        Button postButton = (Button) findViewById(R.id.post_submit);
+        AlphaAnimation animate = new AlphaAnimation(enabled ? 0.2f : 1.0f, enabled ? 1.0f : 0.2f);
+        animate.setDuration(500);
+        animate.setFillAfter(true);
+        postButton.startAnimation(animate);
+        postButton.setEnabled(enabled);
     }
 
     private void updateDate() {
@@ -150,15 +185,45 @@ public class UploadActivity extends AppCompatActivity implements APIReceiver.Rec
 
     private void updateImage(Uri img) {
         imageUri = img;
+
+        // Get EXIF date and orientation
+        InputStream in = null;
+        int orientation = ExifInterface.ORIENTATION_NORMAL;
+        try {
+            in = getContentResolver().openInputStream(img);
+            ExifInterface exifInterface = new ExifInterface(in);
+            orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+            String photoDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
+            System.out.println(photoDate);
+            String[] parts = photoDate.split(" ")[0].split(":");
+            // Set calendar to photo date
+            calendar.set(Calendar.YEAR, parseInt(parts[0]));
+            calendar.set(Calendar.MONTH, parseInt(parts[1]) - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, parseInt(parts[2]));
+        }
+        catch(IOException e) {
+            System.out.println("Could not get date attribute from photo");
+        }
+        finally {
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch(IOException ignored) {}
+            }
+        }
+
+        // Display image
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), img);
             ImageView imageView = (ImageView) findViewById(R.id.photo_preview);
-            imageView.setImageBitmap(bitmap);
+            imageView.setImageBitmap(rotate(bitmap, orientation));
             imageView.setBackgroundColor(Color.TRANSPARENT);
         }
         catch(IOException e) {
             e.printStackTrace();
         }
+
         // Hide hint text and background
         TextView hintText = (TextView) findViewById(R.id.photo_preview_hint);
         hintText.setVisibility(View.INVISIBLE);
