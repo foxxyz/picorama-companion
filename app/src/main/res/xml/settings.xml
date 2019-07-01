@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        app:key="serverURL"
+        app:title="URL of Chrono.vision Server"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="authCode"
+        app:title="Authentication Secret"
+        app:summary="Secret code used to post items"
+        android:inputType="textPassword" />
+
+</PreferenceScreen>
+

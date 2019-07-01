@@ -6,4 +6,5 @@
     <string name="photo_post">Post</string>
     <string name="photo_select">Select Photo</string>
     <string name="photo_date">Photo Date</string>
+    <string name="settings_title">Settings</string>
 </resources>

@@ -3,6 +3,7 @@ package com.foxxyz.chronovision
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Matrix
@@ -12,8 +13,11 @@ import android.media.ExifInterface
 import android.net.Uri
 import android.os.Handler
 import android.provider.MediaStore
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.widget.Button
@@ -26,18 +30,21 @@ import android.widget.Toast
 import java.io.IOException
 import java.io.InputStream
 import java.util.Locale
-
 import java.lang.Integer.parseInt
 
+import org.mindrot.jbcrypt.BCrypt
 
 class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
     private val calendar = Calendar.getInstance()
     var receiver: APIReceiver? = null
     private var imageUri: Uri? = null
+    private var preferences: SharedPreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
+        setSupportActionBar(findViewById(R.id.toolbar))
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // Get incoming intent
         val intent = intent
@@ -65,6 +72,26 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
 
         // Set current date
         updateDate()
+
+        // Get preferences
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+    }
+
+    // Draw the options menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?) = when (item?.itemId) {
+        R.id.action_settings -> {
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+            true
+        }
+        else -> {
+            super.onOptionsItemSelected(item)
+        }
     }
 
     public override fun onPause() {
@@ -75,7 +102,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        println(requestCode)
+        // Result return from image picker
         if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
             val uri = data.data
             updateImage(uri)
@@ -84,6 +111,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         }
     }
 
+    // Receiving a result back from the FileUploadService
     override fun onReceiveResult(resultCode: Int, resultData: Bundle) {
         when (resultCode) {
             FileUploadService.RUNNING -> {
@@ -93,7 +121,8 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
                 toggleInterface(true)
             }
             FileUploadService.ERROR -> {
-                println("error")
+                Toast.makeText(this, "Unable to contact server! Check your server URL and try again.", Toast.LENGTH_LONG).show()
+                println(resultData.getString(Intent.EXTRA_TEXT))
                 toggleInterface(true)
             }
         }
@@ -123,7 +152,18 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
 
     private fun submit() {
         val submit = Intent(this, FileUploadService::class.java)
-        submit.putExtra("url", UPLOAD_URL)
+        val url = preferences?.getString("serverURL", "")
+        if (url == "") {
+            Toast.makeText(this, "Please set server URL!", Toast.LENGTH_LONG).show()
+            return
+        }
+        val authToken = preferences?.getString("authCode", "")
+        if (authToken == "") {
+            Toast.makeText(this, "Please set server auth code!", Toast.LENGTH_LONG).show()
+            return
+        }
+        submit.putExtra("url", url + "/add/")
+        submit.putExtra("authToken", BCrypt.hashpw(authToken, BCrypt.gensalt()))
         val dateField = findViewById<View>(R.id.photo_date) as EditText
         submit.putExtra("date", dateField.text.toString() + "T12:00")
         submit.putExtra("photo", imageUri)
@@ -200,7 +240,6 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
 
     companion object {
         private val PICK_IMAGE = 100
-        private val UPLOAD_URL = "http://192.168.1.5:8000/add/"
     }
 
 }

@@ -19,9 +19,10 @@ class FileUploadService : IntentService("FileUploadService") {
 
     override fun onHandleIntent(intent: Intent?) {
         val url = intent!!.getStringExtra("url")
+        val authToken = intent!!.getStringExtra("authToken")
         val builder = OkHttpClient.Builder()
-        builder.connectTimeout(30, TimeUnit.SECONDS)
-        builder.readTimeout(30, TimeUnit.SECONDS)
+        builder.connectTimeout(10, TimeUnit.SECONDS)
+        builder.readTimeout(10, TimeUnit.SECONDS)
         val photo = intent.getParcelableExtra<Uri>("photo")
 
         // Set receiver
@@ -39,6 +40,7 @@ class FileUploadService : IntentService("FileUploadService") {
                     .addFormDataPart("date", intent.getStringExtra("date"))
                     .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, contentResolver, photo))
             val request = Request.Builder().url(url)
+                    .addHeader("Authorization", "Bearer " + authToken)
             val response = post(builder, request, body)
             receiver.send(FINISHED, Bundle.EMPTY)
         } catch (e: IOException) {
