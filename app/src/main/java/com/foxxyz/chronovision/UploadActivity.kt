@@ -154,7 +154,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         val submit = Intent(this, FileUploadService::class.java)
         val url = preferences?.getString("serverURL", "")
         if (url == "") {
-            Toast.makeText(this, "Please set server URL!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Please set site URL!", Toast.LENGTH_LONG).show()
             return
         }
         val authToken = preferences?.getString("authCode", "")
@@ -162,7 +162,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
             Toast.makeText(this, "Please set server auth code!", Toast.LENGTH_LONG).show()
             return
         }
-        submit.putExtra("url", url + "/add/")
+        submit.putExtra("url", "$url/add/")
         submit.putExtra("authToken", BCrypt.hashpw(authToken, BCrypt.gensalt()))
         val dateField = findViewById<View>(R.id.photo_date) as EditText
         submit.putExtra("date", dateField.text.toString() + "T12:00")
