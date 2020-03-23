@@ -27,6 +27,6 @@ class InputStreamRequestBody(private val contentType: MediaType, private val con
 
     @Throws(IOException::class)
     override fun writeTo(sink: BufferedSink) {
-        sink.writeAll(contentResolver.openInputStream(uri).source())
+        sink.writeAll(contentResolver.openInputStream(uri!!)?.source()!!)
     }
 }

@@ -57,7 +57,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         val selectPhotoButton = findViewById<View>(R.id.photo_preview_container) as RelativeLayout
         selectPhotoButton.setOnClickListener { openGallery() }
 
-        val dateListener = DatePickerDialog.OnDateSetListener { view, year, month, dayOfMonth ->
+        val dateListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             calendar.set(Calendar.YEAR, year)
             calendar.set(Calendar.MONTH, month)
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
