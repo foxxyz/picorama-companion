@@ -10,6 +10,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -34,7 +35,7 @@ class FileUploadService : IntentService("FileUploadService") {
 
         // Start the request
         try {
-            val mType = MediaType.parse("image/jpg")!!
+            val mType = "image/jpg".toMediaTypeOrNull()!!
             val body = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("date", intent.getStringExtra("date"))
