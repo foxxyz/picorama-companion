@@ -83,7 +83,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?) = when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_settings -> {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
@@ -198,13 +198,12 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         imageUri = img
 
         // Get EXIF date and orientation
-        var `in`: InputStream? = null
+        var `in` = contentResolver.openInputStream((img!!))!!
         var orientation = ExifInterface.ORIENTATION_NORMAL
         try {
-            `in` = contentResolver.openInputStream(img!!)
             val exifInterface = ExifInterface(`in`)
             orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
-            val photoDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
+            val photoDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)!!
             println(photoDate)
             val parts = photoDate.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             // Set calendar to photo date
@@ -214,12 +213,9 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         } catch (e: IOException) {
             println("Could not get date attribute from photo")
         } finally {
-            if (`in` != null) {
-                try {
-                    `in`.close()
-                } catch (ignored: IOException) {
-                }
-
+            try {
+                `in`.close()
+            } catch (ignored: IOException) {
             }
         }
 
@@ -239,7 +235,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
     }
 
     companion object {
-        private val PICK_IMAGE = 100
+        private const val PICK_IMAGE = 100
     }
 
 }
