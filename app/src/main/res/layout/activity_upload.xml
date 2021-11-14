@@ -64,7 +64,7 @@
             android:layout_marginBottom="30dp"
             android:clickable="true"
             android:ems="10"
-            android:focusable="true"
+            android:focusable="false"
             android:hint="@string/photo_date"
             android:importantForAutofill="no"
             android:inputType="date"
