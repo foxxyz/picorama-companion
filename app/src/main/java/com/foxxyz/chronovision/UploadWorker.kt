@@ -1,10 +1,12 @@
 package com.foxxyz.chronovision
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.ResultReceiver
 import androidx.work.Worker
+import androidx.work.WorkerParameters
 
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -14,48 +16,35 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.Response
+import java.io.File
 
-class FileUploadService : Worker {
+class UploadWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
 
-    override fun onHandleIntent(intent: Intent?) {
-        val url = intent!!.getStringExtra("url")
-        val authToken = intent.getStringExtra("authToken")
+    override fun doWork(): Result {
+        val url = inputData.getString("url") ?: return Result.failure()
+        val authToken = inputData.getString("authToken") ?: return Result.failure()
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
-        val photo = intent.getParcelableExtra<Uri>("photo")
-
-        // Set receiver
-        val receiver = intent.getParcelableExtra<ResultReceiver>("receiver")
-
-        // Inform of progress
-        val b = Bundle()
-        receiver?.send(RUNNING, Bundle.EMPTY)
+        val photo = inputData.getString("photo") ?: return Result.failure()
+        val date = inputData.getString("date") ?: return Result.failure()
 
         // Start the request
-        try {
+        return try {
             val mType = "image/jpg".toMediaTypeOrNull()!!
-            val body = intent.getStringExtra("date")?.let {
-                MultipartBody.Builder()
-                        .setType(MultipartBody.FORM)
-                        .addFormDataPart("date", it)
-                        .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, contentResolver, photo))
-            }
-            val request = url?.let {
-                Request.Builder().url(it)
-                        .addHeader("Authorization", "Bearer $authToken")
-            }
-            if (request != null && body != null) {
-                Companion.post(builder, request, body)
-            }
-            receiver?.send(FINISHED, Bundle.EMPTY)
+            val body = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("date", date)
+                    .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, applicationContext.contentResolver, Uri.parse(photo)))
+            val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $authToken")
+            Companion.post(builder, request, body)
+            Result.success()
         } catch (e: IOException) {
             e.printStackTrace()
-            b.putString(Intent.EXTRA_TEXT, e.toString())
-            receiver?.send(ERROR, b)
+            Result.failure()
         }
-
     }
 
     companion object {

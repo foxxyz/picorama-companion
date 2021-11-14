@@ -26,6 +26,9 @@ import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.Observer
+import androidx.work.*
 
 import java.io.IOException
 import java.io.InputStream
@@ -34,11 +37,18 @@ import java.lang.Integer.parseInt
 
 import org.mindrot.jbcrypt.BCrypt
 
-class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
+class UploadActivity : AppCompatActivity()  {
     private val calendar = Calendar.getInstance()
     var receiver: APIReceiver? = null
     private var imageUri: Uri? = null
     private var preferences: SharedPreferences? = null
+    private val gallery = registerForActivityResult(ActivityResultContracts.GetContent()){ uri: Uri? ->
+        uri?.let { it ->
+            updateImage(it)
+            updateDate()
+            toggleInterface(true)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +65,9 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         }
 
         val selectPhotoButton = findViewById<View>(R.id.photo_preview_container) as RelativeLayout
-        selectPhotoButton.setOnClickListener { openGallery() }
+        selectPhotoButton.setOnClickListener {
+            gallery.launch("image/*")
+        }
 
         val dateListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             calendar.set(Calendar.YEAR, year)
@@ -100,43 +112,10 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         receiver!!.setReceiver(null)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        // Result return from image picker
-        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            val uri = data.data
-            updateImage(uri)
-            updateDate()
-            toggleInterface(true)
-        }
-    }
-
-    // Receiving a result back from the FileUploadService
-    override fun onReceiveResult(resultCode: Int, resultData: Bundle) {
-        when (resultCode) {
-            FileUploadService.RUNNING -> {
-            }
-            FileUploadService.FINISHED -> {
-                Toast.makeText(this, "Photo posted!", Toast.LENGTH_LONG).show()
-                toggleInterface(true)
-            }
-            FileUploadService.ERROR -> {
-                Toast.makeText(this, "Unable to contact server! Check your server URL and try again.", Toast.LENGTH_LONG).show()
-                println(resultData.getString(Intent.EXTRA_TEXT))
-                toggleInterface(true)
-            }
-        }
-    }
-
     private fun handleSendImage(intent: Intent) {
         val uri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
         // Put image into the photo picker
         updateImage(uri)
-    }
-
-    private fun openGallery() {
-        val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-        startActivityForResult(gallery, PICK_IMAGE)
     }
 
     // Rotate bitmap to correct orientation
@@ -151,7 +130,6 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
     }
 
     private fun submit() {
-        val submit = Intent(this, FileUploadService::class.java)
         val url = preferences?.getString("serverURL", "")
         if (url == "") {
             Toast.makeText(this, "Please set site URL!", Toast.LENGTH_LONG).show()
@@ -162,20 +140,32 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
             Toast.makeText(this, "Please set server auth code!", Toast.LENGTH_LONG).show()
             return
         }
-        submit.putExtra("url", "$url/add/")
-        submit.putExtra("authToken", BCrypt.hashpw(authToken, BCrypt.gensalt()))
+        val inputs = Data.Builder()
+        inputs.putString("url", "$url/add/")
+        inputs.putString("authToken", BCrypt.hashpw(authToken, BCrypt.gensalt()))
         val dateField = findViewById<View>(R.id.photo_date) as EditText
-        submit.putExtra("date", dateField.text.toString() + "T12:00")
-        submit.putExtra("photo", imageUri)
-
-        // Set up receiver
-        receiver = APIReceiver(Handler())
-        receiver!!.setReceiver(this)
-        submit.putExtra("receiver", receiver)
+        inputs.putString("date", dateField.text.toString() + "T12:00")
+        inputs.putString("photo", imageUri.toString())
 
         // Start and lock interface
-        startService(submit)
+        val request = OneTimeWorkRequestBuilder<UploadWorker>()
+                .setInputData(inputs.build())
+                .build()
+        WorkManager.getInstance(this).enqueue(request)
         toggleInterface(false)
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(request.id)
+                .observe(this, Observer { info ->
+                    if (info == null || !info.state.isFinished) return@Observer
+                    if (info.state == WorkInfo.State.SUCCEEDED) {
+                        Toast.makeText(this, "Photo posted!", Toast.LENGTH_LONG).show()
+                    }
+                    else {
+                        Toast.makeText(this, "Unable to contact server! Check your server URL and try again.", Toast.LENGTH_LONG).show()
+                        println(info.outputData.getString("error"))
+                    }
+                    toggleInterface(true)
+                })
     }
 
     private fun toggleInterface(enabled: Boolean) {
@@ -198,7 +188,7 @@ class UploadActivity : AppCompatActivity(), APIReceiver.Receiver {
         imageUri = img
 
         // Get EXIF date and orientation
-        var `in` = contentResolver.openInputStream((img!!))!!
+        val `in` = contentResolver.openInputStream((img!!))!!
         var orientation = ExifInterface.ORIENTATION_NORMAL
         try {
             val exifInterface = ExifInterface(`in`)
