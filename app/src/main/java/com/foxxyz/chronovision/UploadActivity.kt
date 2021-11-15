@@ -222,7 +222,6 @@ class UploadActivity : AppCompatActivity()  {
         hintText.visibility = View.INVISIBLE
     }
 
-    companion object {
-    }
+    companion object
 
 }
