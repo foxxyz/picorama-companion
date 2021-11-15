@@ -1,6 +1,5 @@
 package com.foxxyz.chronovision
 
-import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.SharedPreferences
@@ -10,10 +9,8 @@ import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.icu.text.SimpleDateFormat
 import android.icu.util.Calendar
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import android.os.Handler
-import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.preference.PreferenceManager
@@ -32,7 +29,6 @@ import androidx.lifecycle.Observer
 import androidx.work.*
 
 import java.io.IOException
-import java.io.InputStream
 import java.util.Locale
 import java.lang.Integer.parseInt
 

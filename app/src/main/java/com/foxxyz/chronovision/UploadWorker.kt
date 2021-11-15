@@ -1,24 +1,18 @@
 package com.foxxyz.chronovision
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import android.os.ResultReceiver
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.Response
-import java.io.File
 
 class UploadWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
 
