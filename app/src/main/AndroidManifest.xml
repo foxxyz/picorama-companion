@@ -35,8 +35,6 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-
-        <service android:name=".FileUploadService" />
     </application>
 
 </manifest>
