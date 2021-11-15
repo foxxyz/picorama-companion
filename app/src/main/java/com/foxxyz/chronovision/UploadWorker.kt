@@ -33,7 +33,7 @@ class UploadWorker(context: Context, workerParams: WorkerParameters) : Worker(co
                     .addFormDataPart("date", date)
                     .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, applicationContext.contentResolver, Uri.parse(photo)))
             val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $authToken")
-            Companion.post(builder, request, body)
+            post(builder, request, body)
             Result.success()
         } catch (e: IOException) {
             e.printStackTrace()
@@ -42,9 +42,6 @@ class UploadWorker(context: Context, workerParams: WorkerParameters) : Worker(co
     }
 
     companion object {
-        const val RUNNING = 1
-        const val ERROR = 2
-        const val FINISHED = 3
 
         @Throws(IOException::class)
         fun post(builder: OkHttpClient.Builder, requestBuilder: Request.Builder, bodyBuilder: MultipartBody.Builder): Response {

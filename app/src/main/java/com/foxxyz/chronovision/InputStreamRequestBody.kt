@@ -16,7 +16,7 @@ class InputStreamRequestBody(private val contentType: MediaType, private val con
         if (uri == null) throw NullPointerException("Uri is null")
     }
 
-    override fun contentType(): MediaType? {
+    override fun contentType(): MediaType {
         return contentType
     }
 

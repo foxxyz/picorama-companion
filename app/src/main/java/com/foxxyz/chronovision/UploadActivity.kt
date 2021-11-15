@@ -36,7 +36,7 @@ import org.mindrot.jbcrypt.BCrypt
 
 class UploadActivity : AppCompatActivity()  {
     private val calendar = Calendar.getInstance()
-    var receiver: APIReceiver? = null
+    private var receiver: APIReceiver? = null
     private var imageUri: Uri? = null
     private var preferences: SharedPreferences? = null
     private val gallery = registerForActivityResult(ActivityResultContracts.GetContent()){ uri: Uri? ->
@@ -223,7 +223,6 @@ class UploadActivity : AppCompatActivity()  {
     }
 
     companion object {
-        private const val PICK_IMAGE = 100
     }
 
 }
