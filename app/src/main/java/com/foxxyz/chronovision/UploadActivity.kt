@@ -53,14 +53,6 @@ class UploadActivity : AppCompatActivity()  {
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayShowTitleEnabled(false)
 
-        // Get incoming intent
-        val intent = intent
-        val action = intent.action
-        val type = intent.type
-        if (Intent.ACTION_SEND == action && type != null) {
-            handleSendImage(intent)
-        }
-
         val selectPhotoButton = findViewById<View>(R.id.photo_preview_container) as RelativeLayout
         selectPhotoButton.setOnClickListener {
             gallery.launch("image/*")
@@ -84,12 +76,25 @@ class UploadActivity : AppCompatActivity()  {
 
         // Get preferences
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
+
+        if (intent?.type?.startsWith("image/") == true) {
+            handleSendImage(intent)
+        }
     }
 
     // Draw the options menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main, menu)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    // Run if app is resumed with new shared content
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent?.type?.startsWith("image/") == true) {
+            handleSendImage(intent)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -191,18 +196,19 @@ class UploadActivity : AppCompatActivity()  {
             val exifInterface = ExifInterface(`in`)
             orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED)
             val photoDate = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)!!
-            println(photoDate)
             val parts = photoDate.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             // Set calendar to photo date
             calendar.set(Calendar.YEAR, parseInt(parts[0]))
             calendar.set(Calendar.MONTH, parseInt(parts[1]) - 1)
             calendar.set(Calendar.DAY_OF_MONTH, parseInt(parts[2]))
+            updateDate()
         } catch (e: IOException) {
-            println("Could not get date attribute from photo")
+            Toast.makeText(this, "Unable to get date from photo!", Toast.LENGTH_LONG).show()
         } finally {
             try {
                 `in`.close()
             } catch (ignored: IOException) {
+                Toast.makeText(this, "IO exception accessing photo", Toast.LENGTH_LONG).show()
             }
         }
 
