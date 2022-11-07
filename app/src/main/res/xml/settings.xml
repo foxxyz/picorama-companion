@@ -2,13 +2,50 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android">
 
     <EditTextPreference
-        app:key="serverURL"
-        app:title="Site URL"
+        app:key="serverName1"
+        app:title="Site 1 Name"
         app:useSimpleSummaryProvider="true"/>
 
     <EditTextPreference
-        app:key="authCode"
-        app:title="Authentication Code"
+        app:key="serverURL1"
+        app:title="Site 1 URL"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="authCode1"
+        app:title="Site 1 Authentication Code"
+        app:summary="Secret code used to post items"
+        android:inputType="textPassword" />
+
+    <EditTextPreference
+        app:key="serverName2"
+        app:title="Site 2 Name"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="serverURL2"
+        app:title="Site 2 URL"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="authCode2"
+        app:title="Site 2 Authentication Code"
+        app:summary="Secret code used to post items"
+        android:inputType="textPassword" />
+
+    <EditTextPreference
+        app:key="serverName3"
+        app:title="Site 3 Name"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="serverURL3"
+        app:title="Site 3 URL"
+        app:useSimpleSummaryProvider="true"/>
+
+    <EditTextPreference
+        app:key="authCode3"
+        app:title="Site 3 Authentication Code"
         app:summary="Secret code used to post items"
         android:inputType="textPassword" />
 

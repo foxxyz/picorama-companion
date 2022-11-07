@@ -13,17 +13,13 @@ import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.animation.AlphaAnimation
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.RelativeLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Observer
 import androidx.work.*
@@ -33,8 +29,9 @@ import java.util.Locale
 import java.lang.Integer.parseInt
 
 import org.mindrot.jbcrypt.BCrypt
+import java.lang.Integer.max
 
-class UploadActivity : AppCompatActivity()  {
+class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  {
     private val calendar = Calendar.getInstance()
     private var receiver: APIReceiver? = null
     private var imageUri: Uri? = null
@@ -74,8 +71,8 @@ class UploadActivity : AppCompatActivity()  {
         // Set current date
         updateDate()
 
-        // Get preferences
-        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        // Update interface based on preferences
+        updateInterface()
 
         if (intent?.type?.startsWith("image/") == true) {
             handleSendImage(intent)
@@ -88,6 +85,12 @@ class UploadActivity : AppCompatActivity()  {
         return super.onCreateOptionsMenu(menu)
     }
 
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val updater = preferences?.edit()
+        updater?.putInt("currentTarget", position)
+        updater?.commit()
+    }
+
     // Run if app is resumed with new shared content
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -95,6 +98,10 @@ class UploadActivity : AppCompatActivity()  {
         if (intent?.type?.startsWith("image/") == true) {
             handleSendImage(intent)
         }
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -112,6 +119,12 @@ class UploadActivity : AppCompatActivity()  {
         super.onPause()
         if (receiver == null) return
         receiver!!.setReceiver(null)
+    }
+
+    public override fun onResume() {
+        super.onResume()
+        // Prefs may have been updated
+        updateInterface()
     }
 
     private fun handleSendImage(intent: Intent) {
@@ -132,12 +145,15 @@ class UploadActivity : AppCompatActivity()  {
     }
 
     private fun submit() {
-        val url = preferences?.getString("serverURL", "")
+        val targetSelector = findViewById<Spinner>(R.id.target_selector_spinner)
+        val siteNumber = targetSelector.selectedItemPosition + 1
+
+        val url = preferences?.getString("serverURL$siteNumber", "")
         if (url == "") {
             Toast.makeText(this, "Please set site URL!", Toast.LENGTH_LONG).show()
             return
         }
-        val authToken = preferences?.getString("authCode", "")
+        val authToken = preferences?.getString("authCode$siteNumber", "")
         if (authToken == "") {
             Toast.makeText(this, "Please set server auth code!", Toast.LENGTH_LONG).show()
             return
@@ -226,6 +242,36 @@ class UploadActivity : AppCompatActivity()  {
         // Hide hint text and background
         val hintText = findViewById<View>(R.id.photo_preview_hint) as TextView
         hintText.visibility = View.INVISIBLE
+    }
+
+    private fun updateInterface() {
+        // Get preferences
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val prefs = preferences!!
+
+        // Show available targets if multiple specified
+        val targetOptions = mutableListOf(prefs.getString("serverName1", "Untitled"))
+        for(i in 2..3) {
+            val target = prefs.getString("serverName$i", "")
+            if (target == "") continue
+            targetOptions.add(target)
+        }
+        val targetAdapter = ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, targetOptions)
+        targetAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val targetSelector = findViewById<Spinner>(R.id.target_selector_spinner)
+        // Make sure we don't select more than we have
+        var selectedTargetPosition = prefs.getInt("currentTarget", 0)
+        selectedTargetPosition = Integer.min(selectedTargetPosition, targetOptions.size - 1)
+        with(targetSelector) {
+            adapter = targetAdapter
+            setSelection(selectedTargetPosition, false)
+            onItemSelectedListener = this@UploadActivity
+            prompt = "Select Site Target"
+        }
+
+        // Hide if only one site available
+        val targetSelectorWrapper = findViewById<LinearLayout>(R.id.target_selector)
+        targetSelectorWrapper.visibility = if (targetOptions.size > 1) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     companion object
