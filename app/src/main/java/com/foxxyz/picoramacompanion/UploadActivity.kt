@@ -217,7 +217,9 @@ class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  
             calendar.set(Calendar.DAY_OF_MONTH, parseInt(parts[2]))
             updateDate()
         } catch (e: IOException) {
-            Toast.makeText(this, "Unable to get date from photo!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Unable to get date from photo! Using current date.", Toast.LENGTH_LONG).show()
+        } catch (e: NullPointerException) {
+            Toast.makeText(this, "Unable to get date from photo! Using current date.", Toast.LENGTH_LONG).show()
         } finally {
             try {
                 `in`.close()
