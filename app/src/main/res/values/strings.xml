@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Chrono.vision</string>
-    <string name="app_logo">Chrono.vision Logo</string>
+    <string name="app_name">Picorama Companion</string>
+    <string name="app_logo">Picorama Logo</string>
     <string name="post_photo_title">Image to be posted</string>
-    <string name="post_photo_navtitle">Chrono.vise</string>
+    <string name="post_photo_navtitle">Picorize</string>
     <string name="photo_post">Post</string>
     <string name="photo_select">Select Photo</string>
     <string name="photo_date">Photo Date</string>

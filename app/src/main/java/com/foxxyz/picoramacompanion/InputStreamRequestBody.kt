@@ -1,4 +1,4 @@
-package com.foxxyz.chronovision
+package com.foxxyz.picoramacompanion
 
 import android.content.ContentResolver
 import android.net.Uri

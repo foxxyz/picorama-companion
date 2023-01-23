@@ -1,4 +1,4 @@
-package com.foxxyz.chronovision
+package com.foxxyz.picoramacompanion
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -13,7 +13,6 @@ import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
@@ -29,7 +28,6 @@ import java.util.Locale
 import java.lang.Integer.parseInt
 
 import org.mindrot.jbcrypt.BCrypt
-import java.lang.Integer.max
 
 class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  {
     private val calendar = Calendar.getInstance()

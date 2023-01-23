@@ -1,4 +1,4 @@
-package com.foxxyz.chronovision
+package com.foxxyz.picoramacompanion
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
