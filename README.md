@@ -1,7 +1,7 @@
 Picorama Companion App
 ======================
 
-Android app for easily picking gallery items to send to your Picorama instance.
+Android app for easily picking gallery items to send to your [Picorama](https://github.com/foxxyz/picorama) instance.
 
 Requirements
 ------------
