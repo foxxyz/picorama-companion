@@ -27,11 +27,12 @@ class UploadWorker(context: Context, workerParams: WorkerParameters) : Worker(co
 
         // Start the request
         return try {
-            val mType = "image/jpg".toMediaTypeOrNull()!!
+            val uri = Uri.parse(photo)
+            val mType = applicationContext.contentResolver.getType(uri)?.toMediaTypeOrNull()!!
             val body = MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("date", date)
-                    .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, applicationContext.contentResolver, Uri.parse(photo)))
+                    .addFormDataPart("photo", "photo.jpg", InputStreamRequestBody(mType, applicationContext.contentResolver, uri))
             val request = Request.Builder().url(url).addHeader("Authorization", "Bearer $authToken")
             post(builder, request, body)
             Result.success()
