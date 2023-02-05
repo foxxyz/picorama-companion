@@ -3,6 +3,8 @@ Picorama Companion App
 
 Android app for easily picking gallery items to send to your [Picorama](https://github.com/foxxyz/picorama) instance.
 
+Supports sending to up to 3 Picorama instances.
+
 Requirements
 ------------
 
@@ -16,6 +18,12 @@ Ensure `ANDROID_SDK_ROOT` is set correctly before building.
 
 Building
 --------
+
+### Using IDE
+
+Load the directory in Android Studio and build.
+
+### Manual
 
  1. Clone repository: `git clone https://github.com/foxxyz/picorama-companion.git`
  2. Enter directory: `cd picorama-companion`
