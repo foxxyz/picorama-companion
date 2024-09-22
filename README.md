@@ -11,8 +11,8 @@ Requirements
 These can be easily installed using the Android SDK Manager.
 
  * OpenJDK 8
- * [Android SDK Platform 28](https://developer.android.com/studio/install)
- * [Android SDK Build-Tools 28.0.3](https://developer.android.com/studio/install)
+ * [Android SDK Platform 33+](https://developer.android.com/studio/install)
+ * [Android SDK Build-Tools 33+](https://developer.android.com/studio/install)
 
 Ensure `ANDROID_SDK_ROOT` is set correctly before building.
 
@@ -37,7 +37,7 @@ Before Using
 Once installed, make sure to set it up to work with your Picorama instance:
 
  1. Open the app
- 2. Open settings by clicking the gear in the top left
+ 2. Open settings by clicking the gear in the top right
  3. Set the URL to your Picorama instance
  4. Set the auth code for your Picorama instance
 
