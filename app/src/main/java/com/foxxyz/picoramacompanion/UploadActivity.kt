@@ -35,7 +35,7 @@ class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  
     private var imageUri: Uri? = null
     private var preferences: SharedPreferences? = null
     private val gallery = registerForActivityResult(ActivityResultContracts.GetContent()){ uri: Uri? ->
-        uri?.let { it ->
+        uri?.let {
             updateImage(it)
             updateDate()
             toggleInterface(true)
@@ -86,7 +86,7 @@ class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val updater = preferences?.edit()
         updater?.putInt("currentTarget", position)
-        updater?.commit()
+        updater?.apply()
     }
 
     // Run if app is resumed with new shared content
@@ -271,7 +271,7 @@ class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  
 
         // Hide if only one site available
         val targetSelectorWrapper = findViewById<LinearLayout>(R.id.target_selector)
-        targetSelectorWrapper.visibility = if (targetOptions.size > 1) android.view.View.VISIBLE else android.view.View.GONE
+        targetSelectorWrapper.visibility = if (targetOptions.size > 1) android.view.View.VISIBLE else View.GONE
     }
 
     companion object
