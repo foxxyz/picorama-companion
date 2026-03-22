@@ -11,8 +11,8 @@ Requirements
 These can be easily installed using the Android SDK Manager.
 
  * OpenJDK 8
- * [Android SDK Platform 33+](https://developer.android.com/studio/install)
- * [Android SDK Build-Tools 33+](https://developer.android.com/studio/install)
+ * [Android SDK Platform 35+](https://developer.android.com/studio/install)
+ * [Android SDK Build-Tools 35+](https://developer.android.com/studio/install)
 
 Ensure `ANDROID_SDK_ROOT` is set correctly before building.
 
