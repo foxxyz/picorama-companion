@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -12,12 +14,12 @@
         android:layout_gravity="top"
         android:elevation="0dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <LinearLayout
-        android:layout_marginBottom="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="?attr/actionBarSize"
         android:gravity="center_vertical|center_horizontal"
         android:orientation="vertical"
         tools:context=".UploadActivity">
@@ -30,16 +32,17 @@
 
         <LinearLayout
             android:id="@+id/target_selector"
-            android:orientation="horizontal"
-            android:gravity="center"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent">
+            android:gravity="center"
+            android:orientation="horizontal">
+
             <TextView
                 android:id="@+id/target_selector_label"
-                android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Target: "
-                />
+                android:layout_height="wrap_content"
+                android:text="Target: " />
+
             <Spinner
                 android:id="@+id/target_selector_spinner"
                 android:layout_width="wrap_content"
@@ -49,9 +52,9 @@
 
         <RelativeLayout
             android:id="@+id/photo_preview_container"
-            android:layout_marginTop="30dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp">
 
             <ImageView
                 android:id="@+id/photo_preview"
@@ -93,8 +96,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
-            android:text="@string/photo_post"
             android:alpha="1"
+            android:text="@string/photo_post"
             android:textSize="18sp" />
 
     </LinearLayout>

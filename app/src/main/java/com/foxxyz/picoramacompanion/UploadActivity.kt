@@ -146,7 +146,7 @@ class UploadActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener  
         val targetSelector = findViewById<Spinner>(R.id.target_selector_spinner)
         val siteNumber = targetSelector.selectedItemPosition + 1
 
-        val url = preferences?.getString("serverURL$siteNumber", "")
+        val url = preferences?.getString("serverURL$siteNumber", "")?.trimEnd('/')
         if (url == "") {
             Toast.makeText(this, "Please set site URL!", Toast.LENGTH_LONG).show()
             return
